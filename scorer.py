@@ -1,79 +1,95 @@
 """
 Resume Scorer: Deterministic scoring using LLM-based skill matching.
-Uses Gemini 2.5 Flash with temperature=0 for reproducible results.
+Uses Gemini 2.5 Flash with temperature=0 and strict enum output.
 """
 
 import os
 import json
 from typing import Dict, List, Any, Tuple
-from pydantic import BaseModel, Field
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+# Load env and configure Gemini (only once)
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+_gemini_configured = False
 
-
-# Pydantic schema for skill matching response
-class SkillMatchResult(BaseModel):
-    matched_skills: List[str] = Field(description="List of required skills that candidate satisfies")
-    reasoning: str = Field(description="Brief explanation of skill matching")
+def ensure_gemini_configured():
+    """Configure Gemini API only if not already configured."""
+    global _gemini_configured
+    if not _gemini_configured:
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        _gemini_configured = True
 
 
 def match_skills_with_llm(candidate_skills: List[str], required_skills: List[str]) -> Tuple[List[str], str]:
     """
-    Use Gemini to intelligently match candidate skills to required skills.
-    Handles semantic equivalence (Flask → Python, EC2 → AWS, etc.)
+    Use Gemini to match candidate skills to required skills.
+    Forces LLM to return ONLY exact skill names from required_skills list.
     """
     if not candidate_skills or not required_skills:
         return [], "No skills to match"
+    
+    ensure_gemini_configured()
     
     try:
         model = genai.GenerativeModel(
             "gemini-2.5-flash",
             generation_config=genai.GenerationConfig(
-                temperature=0,  # Deterministic
+                temperature=0,
                 response_mime_type="application/json",
-                response_schema=SkillMatchResult
             )
         )
         
-        prompt = f"""Analyze the candidate's skills and determine which REQUIRED skills they satisfy.
+        # Format required skills as explicit enum
+        required_skills_lower = [s.lower() for s in required_skills]
+        skills_enum = ", ".join([f'"{s}"' for s in required_skills_lower])
+        
+        prompt = f"""You are a skill matching system. Analyze candidate skills and return which required skills they satisfy.
 
-REQUIRED SKILLS: {json.dumps(required_skills)}
+REQUIRED SKILLS (you can ONLY return skills from this exact list):
+{json.dumps(required_skills_lower)}
 
-CANDIDATE'S SKILLS: {json.dumps(candidate_skills)}
+CANDIDATE'S SKILLS:
+{json.dumps(candidate_skills)}
 
 Rules:
-- A candidate skill can satisfy a required skill if it's the same technology OR a related framework/tool
-- Examples: "Flask" satisfies "python", "React Native" satisfies "javascript", "PostgreSQL" satisfies "sql", "EC2" satisfies "aws"
-- Only return skills from the REQUIRED SKILLS list that are satisfied
-- Be strict but fair - the candidate should have clear knowledge of the technology
+1. You can ONLY return skills that exist EXACTLY in the REQUIRED SKILLS list above
+2. A candidate skill satisfies a required skill if it's the same OR a related framework/tool:
+   - "Flask", "Django" → satisfies "python"
+   - "React Native", "TypeScript" → satisfies "javascript"  
+   - "PostgreSQL", "MySQL" → satisfies "sql"
+   - "EC2", "S3", "Lambda" → satisfies "aws"
+   - "GitHub", "GitLab" → satisfies "git"
+3. Be strict but fair
 
-Return the matched required skills and brief reasoning."""
+Return JSON in this EXACT format:
+{{
+  "matched_skills": ["skill1", "skill2"],
+  "reasoning": "brief explanation"
+}}
+
+IMPORTANT: matched_skills array must ONLY contain values from this list: [{skills_enum}]"""
 
         response = model.generate_content(prompt)
         result = json.loads(response.text)
         
-        # Normalize matched skills to lowercase
-        matched = [s.lower() for s in result.get('matched_skills', [])]
+        # Strict validation: only keep skills that exactly match required skills
+        matched_raw = result.get('matched_skills', [])
+        matched = [s for s in matched_raw if s.lower() in required_skills_lower]
         reasoning = result.get('reasoning', '')
         
-        # Filter to only include valid required skills
-        valid_matched = [s for s in matched if s in [r.lower() for r in required_skills]]
-        
-        return valid_matched, reasoning
+        return matched, reasoning
         
     except Exception as e:
         print(f"Error in LLM skill matching: {e}")
-        # Fallback to simple exact matching
+        # Fallback to exact matching
         candidate_lower = {s.lower() for s in candidate_skills}
-        required_lower = {s.lower() for s in required_skills}
-        return list(candidate_lower.intersection(required_lower)), "Fallback: exact match only"
+        required_lower = set(required_skills_lower)
+        return list(candidate_lower.intersection(required_lower)), "Fallback: exact match"
 
 
 class ResumeScorer:
-    """Deterministic resume scoring engine with LLM-based skill matching."""
+    """Deterministic resume scoring with LLM-based skill matching."""
     
     def __init__(self, job_description: Dict[str, Any]):
         self.jd = job_description
@@ -81,7 +97,6 @@ class ResumeScorer:
         self.required_experience = job_description.get('required_experience', 0)
         self.required_skills = [s.lower() for s in job_description.get('required_skills', [])]
         
-        # Weights for scoring (total = 100)
         self.weights = {
             'skills': 40,
             'experience': 30,
@@ -90,12 +105,12 @@ class ResumeScorer:
         }
     
     def calculate_skills_score(self, candidate_skills: List[str]) -> Tuple[float, List[str], List[str], str]:
-        """Calculate skills score using LLM matching."""
+        """Calculate skills score using LLM matching with strict validation."""
         if not self.required_skills:
             return 100.0, [], [], "No skills required"
         
         if not candidate_skills:
-            return 0.0, [], self.required_skills, "No skills provided"
+            return 0.0, [], self.required_skills.copy(), "No skills provided"
         
         matched, reasoning = match_skills_with_llm(candidate_skills, self.required_skills)
         missing = [s for s in self.required_skills if s not in matched]
@@ -109,63 +124,42 @@ class ResumeScorer:
         
         if req == 0:
             return 100.0, "No experience requirement"
-        
         if years <= 0:
             return 0.0, "No experience listed"
         
         if years < req:
-            score = (years / req) * 100
-            explanation = f"{years:.1f}y (need {req}+)"
-        else:
-            score = 100.0
-            explanation = f"{years:.1f}y (meets {req}+ req)"
-        
-        return score, explanation
+            return (years / req) * 100, f"{years:.1f}y (need {req}+)"
+        return 100.0, f"{years:.1f}y (meets {req}+ req)"
     
     def calculate_relevance_score(self, experience: List[Dict]) -> Tuple[float, str]:
         """Calculate role relevance from job titles."""
         if not experience:
             return 0.0, "No work history"
         
-        relevant_keywords = {
-            'software', 'developer', 'engineer', 'programmer', 'full-stack',
-            'fullstack', 'backend', 'frontend', 'front-end', 'back-end',
-            'web', 'application', 'tech lead', 'devops', 'sre', 'architect'
-        }
+        keywords = {'software', 'developer', 'engineer', 'programmer', 'full-stack',
+                   'fullstack', 'backend', 'frontend', 'web', 'devops', 'architect'}
         
         relevant = sum(1 for exp in experience 
-                      if any(kw in exp.get('job_title', '').lower() for kw in relevant_keywords))
+                      if any(kw in exp.get('job_title', '').lower() for kw in keywords))
         total = len(experience)
         
-        score = (relevant / total) * 100 if total > 0 else 0
-        return score, f"{relevant}/{total} relevant roles"
+        return (relevant / total) * 100 if total else 0, f"{relevant}/{total} relevant"
     
     def calculate_education_score(self, education: List[Dict]) -> Tuple[float, str]:
-        """Calculate education score with tiered degrees."""
+        """Calculate education score."""
         if not education:
             return 30.0, "No education listed"
         
-        tier1 = ['computer science', 'software engineering', 'computer engineering']
-        tier2 = ['information technology', 'data science', 'electrical engineering', 'mathematics']
-        tier3 = ['engineering', 'science', 'technology']
-        
-        best_score, best_note = 30.0, "No relevant degree"
-        
         for edu in education:
             degree = edu.get('degree', '').lower()
-            if any(t in degree for t in tier1):
+            if any(t in degree for t in ['computer science', 'software engineering']):
                 return 100.0, "CS/SE degree"
-            elif any(t in degree for t in tier2):
-                if 80.0 > best_score:
-                    best_score, best_note = 80.0, "Related technical degree"
-            elif any(t in degree for t in tier3):
-                if 60.0 > best_score:
-                    best_score, best_note = 60.0, "Technical degree"
-            elif 'bachelor' in degree or 'master' in degree:
-                if 50.0 > best_score:
-                    best_score, best_note = 50.0, "Other degree"
+            if any(t in degree for t in ['information technology', 'data science', 'electrical']):
+                return 80.0, "Related degree"
+            if any(t in degree for t in ['engineering', 'science']):
+                return 60.0, "Technical degree"
         
-        return best_score, best_note
+        return 40.0, "Other degree"
     
     def score(self, resume_data: Dict[str, Any]) -> Dict[str, Any]:
         """Calculate total weighted score."""
@@ -175,13 +169,11 @@ class ResumeScorer:
         education = resume_data.get('education', [])
         name = resume_data.get('name', 'Unknown')
         
-        # Calculate scores
-        skills_score, matched, missing, skill_reasoning = self.calculate_skills_score(skills)
+        skills_score, matched, missing, reasoning = self.calculate_skills_score(skills)
         exp_score, exp_note = self.calculate_experience_score(years)
         rel_score, rel_note = self.calculate_relevance_score(experience)
         edu_score, edu_note = self.calculate_education_score(education)
         
-        # Weighted total
         total = (
             (skills_score * self.weights['skills'] / 100) +
             (exp_score * self.weights['experience'] / 100) +
@@ -189,7 +181,6 @@ class ResumeScorer:
             (edu_score * self.weights['education'] / 100)
         )
         
-        # Generate explanation
         explanation = f"Skills: {len(matched)}/{len(self.required_skills)} matched. {exp_note}. {rel_note}."
         
         return {
@@ -205,7 +196,7 @@ class ResumeScorer:
             "details": {
                 "matched_skills": matched,
                 "missing_skills": missing,
-                "skill_reasoning": skill_reasoning,
+                "skill_reasoning": reasoning,
                 "experience_years": years,
                 "education_note": edu_note
             }
@@ -217,7 +208,6 @@ if __name__ == "__main__":
     
     scorer = ResumeScorer(JOB_DESCRIPTION)
     
-    # Test - Flask should match Python!
     sample = {
         "name": "Test Candidate",
         "skills": ["Flask", "Django", "TypeScript", "EC2", "GitHub", "PostgreSQL"],

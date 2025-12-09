@@ -1,0 +1,45 @@
+[
+  {
+    "file_path": "resumes/resume1.pdf",
+    "file_name": "resume1.pdf",
+    "candidate_name": "Candidate Name",
+    "total_score": 76.0,
+    "explanation": "Skills: 6/9 matched. 13.8y (meets 3+ req). 4/6 relevant.",
+    "breakdown": {
+      "skills": {
+        "score": 66.67,
+        "weight": 40
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 30
+      },
+      "relevance": {
+        "score": 66.67,
+        "weight": 20
+      },
+      "education": {
+        "score": 60.0,
+        "weight": 10
+      }
+    },
+    "details": {
+      "matched_skills": [
+        "javascript",
+        "react",
+        "nodejs",
+        "docker",
+        "git",
+        "sql"
+      ],
+      "missing_skills": [
+        "python",
+        "aws",
+        "rest apis"
+      ],
+      "skill_reasoning": "Candidate has 'JavaScript' and 'TypeScript' for 'javascript', 'React.js' for 'react', 'Node.js' for 'nodejs', 'Docker' for 'docker', 'GitHub Actions' for 'git', and 'SQL' for 'sql'.",
+      "experience_years": 13.8,
+      "education_note": "Technical degree"
+    }
+  }
+]

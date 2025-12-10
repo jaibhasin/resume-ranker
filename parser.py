@@ -17,7 +17,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 def extract_text_from_pdf_with_gemini(file_path: str) -> Optional[str]:
     """Fallback OCR using Gemini 2.5 Flash for image-based PDFs."""
     try:
-        print(f"  → Using Gemini 2.5 Flash for OCR...")
+        # print(f"  → Using Gemini 2.5 Flash for OCR...")
         model = genai.GenerativeModel("gemini-2.5-flash")
         uploaded_file = genai.upload_file(file_path)
         
@@ -48,7 +48,7 @@ def extract_text_from_pdf(file_path: str) -> Optional[str]:
         if text_content:
             return "\n".join(text_content)
         
-        print(f"No text layer found, falling back to Gemini OCR...")
+        # print(f"No text layer found, falling back to Gemini OCR...")
         return extract_text_from_pdf_with_gemini(file_path)
     
     except Exception as e:

@@ -79,12 +79,6 @@ I used resumes from reddit for testing.
 IDE used was Google's Antigravity  
 I am using gemini-2.5-flash api for processing (could have use gemini-3.0)
 
-Process : 
-1. get resumes from user using CLI
-2. extract all the text from resume 
-3. We have unstructred data now, which we need to get in structured format. We use gemini(temp=0) to get data in json format using pydantic schema
-4. Then apply the scoring logic to get score for each resume
-
 I tried to understand the best approach for implementing this, for which I took help of chatgpt, claude and gemini, to understand all kinds of approaches. 
 
 I designed the full software architecture, and implemented each file step by step. (used Antigravity side by side)
@@ -93,3 +87,9 @@ I implmented in the following order : main.py , parser.py , extract.py , scorer.
 For each call made to gemini, its prompt was written by Antigravity (under my supervision)
 
 Used Antigravity for testing and debugging
+
+Process : 
+1. get resumes from user using CLI
+2. extract all the text from resume 
+3. We have unstructred data now, which we need to get in structured format. We use gemini(temp=0) to get data in json format using pydantic schema
+4. Then apply the scoring logic to get score for each resume

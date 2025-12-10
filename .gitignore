@@ -8,11 +8,7 @@ __pycache__/
 *.pyd
 .Python
 
-# Generated outputs
-ranking_results.json
 
-# Resume files (sensitive data)
-resumes/
 
 # macOS
 .DS_Store

@@ -30,7 +30,7 @@ def match_skills_with_llm(candidate_skills: List[str], required_skills: List[str
     
     try:
         model = genai.GenerativeModel(
-            "gemini-1.5-flash",
+            "gemini-2.5-flash-lite",
             generation_config=genai.GenerationConfig(
                 temperature=0,
                 response_mime_type="application/json",
@@ -137,7 +137,7 @@ class ResumeScorer:
         
         try:
             model = genai.GenerativeModel(
-                "gemini-1.5-flash",
+                "gemini-2.5-flash-lite",
                 generation_config=genai.GenerationConfig(
                     temperature=0,
                     response_mime_type="application/json",
@@ -202,7 +202,7 @@ IMPORTANT: Score must be 0, 40, 60, 80, or 100"""
         
         try:
             model = genai.GenerativeModel(
-                "gemini-1.5-flash",
+                "gemini-2.5-flash-lite",
                 generation_config=genai.GenerationConfig(
                     temperature=0,
                     response_mime_type="application/json",

@@ -77,7 +77,7 @@ This is the final determistic resume scoring system I built.
 
 I used resumes from reddit for testing.  
 IDE used was Google's Antigravity  
-I am using gemini-1.5-flash api for processing (could have use gemini-3.0, but low free tier limit)
+I am using gemini-2.5-flash-lite api for processing (could have use gemini-3.0, but low free tier limit)
 
 I tried to understand the best approach for implementing this, for which I took help of chatgpt, claude and gemini, to understand all kinds of approaches. 
 

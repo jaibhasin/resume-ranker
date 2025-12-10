@@ -59,7 +59,7 @@ def collect_resume_files(args):
 
 def process_resume(file_path: str, scorer: ResumeScorer) -> dict:
     """Process a single resume through the full pipeline."""
-    print(f"Processing: {os.path.basename(file_path)}:\n")
+    print(f"\nProcessing: {os.path.basename(file_path)}:")
     
     # Step 1: Parse (extract text)
     print("Extracting text...")
@@ -111,7 +111,8 @@ def display_rankings(results: list):
             print(f"   ✓ Matched skills: {', '.join(details['matched_skills'])}")
         if details['missing_skills']:
             print(f"   ✗ Missing skills: {', '.join(details['missing_skills'])}")
-
+        print()
+        
 
 def main():
     """Main execution flow."""

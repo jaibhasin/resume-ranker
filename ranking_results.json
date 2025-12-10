@@ -1,13 +1,13 @@
 [
   {
-    "file_path": "resumes/resume5.docx",
-    "file_name": "resume5.docx",
-    "candidate_name": "Dennis Schr\u00f6der",
-    "total_score": 90.0,
-    "explanation": "Skills: 7/9 matched. 13.9y (meets 3+ req). All past job titles are directly relevant to a Software Engineer role, encompassing senior, junior, specialized (iOS), and broad (Full-Stack) software engineering and development positions..",
+    "file_path": "resumes/resume1.pdf",
+    "file_name": "resume1.pdf",
+    "candidate_name": "Candidate Name",
+    "total_score": 63.0,
+    "explanation": "Skills: 6/9 matched. 10.6y (meets 3+ req). No work history.",
     "breakdown": {
       "skills": {
-        "score": 77.78,
+        "score": 66.67,
         "weight": 40
       },
       "experience": {
@@ -15,31 +15,31 @@
         "weight": 30
       },
       "relevance": {
-        "score": 100.0,
+        "score": 0.0,
         "weight": 20
       },
       "education": {
-        "score": 100.0,
+        "score": 30.0,
         "weight": 10
       }
     },
     "details": {
       "matched_skills": [
-        "python",
         "javascript",
         "react",
-        "aws",
+        "nodejs",
+        "sql",
         "docker",
-        "git",
-        "sql"
+        "git"
       ],
       "missing_skills": [
-        "nodejs",
+        "python",
+        "aws",
         "rest apis"
       ],
-      "skill_reasoning": "Candidate explicitly lists Python, React, AWS, Docker, and Git. JavaScript is satisfied by 'JavaScript' and 'TypeScript'. SQL is satisfied by 'SQL', 'PostgreSQL', and 'MySQL'.",
-      "experience_years": 13.9,
-      "education_note": "A Bachelor of Science in Game Development provides a strong foundation in programming, software design, algorithms, and system development, which are core competencies directly applicable to a Software Engineer role."
+      "skill_reasoning": "Candidate skills include Node.js (nodejs), JavaScript (javascript), React.js (react), SQL (sql), Docker (docker), and GitHub (git). TypeScript is related to JavaScript. GraphQL is related to REST APIs but not a direct match. No direct matches for python or aws.",
+      "experience_years": 10.583333333333334,
+      "education_note": "No education listed"
     }
   }
 ]

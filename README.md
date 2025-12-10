@@ -73,9 +73,10 @@ google-generativeai : used to access gemini-api (can be later changed with claud
 
 
 ## All AI tools used and how
-This is the final determistic resume scoring system I built. 
-I used resumes from reddit for testing.
-IDE used was Google's Antigravity
+This is the final determistic resume scoring system I built.
+
+I used resumes from reddit for testing.  
+IDE used was Google's Antigravity  
 I am using gemini-2.5-flash api for processing (could have use gemini-3.0)
 
 Process : 

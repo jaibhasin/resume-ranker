@@ -1,7 +1,5 @@
 google-generativeai
-langchain
-langchain-google-genai
 pdfplumber
 python-docx
-numpy                    
 python-dotenv
+pydantic

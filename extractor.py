@@ -72,36 +72,3 @@ Calculate total_years_experience by summing up all job durations."""
         print(f"Error extracting structured data: {e}")
         return None
 
-
-def extract_resume(file_path: str, resume_text: str) -> dict:
-    """Extract and return structured resume data with metadata."""
-    structured = extract_structured_data(resume_text)
-    
-    return {
-        "file_path": file_path,
-        "file_name": os.path.basename(file_path),
-        "raw_text": resume_text,
-        "structured_data": structured,
-        "extraction_success": structured is not None
-    }
-
-
-if __name__ == "__main__":
-    # Test with sample text
-    sample = """
-    John Doe
-    john.doe@email.com | 555-123-4567 | San Francisco, CA
-    
-    Senior Software Engineer with 5+ years of experience in Python, React, and AWS.
-    
-    Experience:
-    - Senior Engineer at TechCorp (2021-2024): Led backend development, Python, Docker
-    - Software Engineer at StartupXYZ (2019-2021): Built REST APIs, React frontend
-    
-    Skills: Python, JavaScript, React, AWS, Docker, PostgreSQL, Git
-    
-    Education: BS Computer Science, Stanford University, 2019
-    """
-    
-    result = extract_structured_data(sample)
-    print(json.dumps(result, indent=2))

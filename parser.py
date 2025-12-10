@@ -48,7 +48,7 @@ def extract_text_from_pdf(file_path: str) -> Optional[str]:
         if text_content:
             return "\n".join(text_content)
         
-        print(f"  → No text layer found, falling back to Gemini OCR...")
+        print(f"No text layer found, falling back to Gemini OCR...")
         return extract_text_from_pdf_with_gemini(file_path)
     
     except Exception as e:

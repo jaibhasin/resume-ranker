@@ -22,10 +22,7 @@ def ensure_gemini_configured():
 
 
 def match_skills_with_llm(candidate_skills: List[str], required_skills: List[str]) -> Tuple[List[str], str]:
-    """
-    Use Gemini to match candidate skills to required skills.
-    Forces LLM to return ONLY exact skill names from required_skills list.
-    """
+
     if not candidate_skills or not required_skills:
         return [], "No skills to match"
     
@@ -98,9 +95,9 @@ class ResumeScorer:
         self.required_skills = [s.lower() for s in job_description.get('required_skills', [])]
         
         self.weights = {
-            'skills': 40,
+            'skills': 45,
             'experience': 30,
-            'relevance': 20,
+            'relevance': 15,
             'education': 10
         }
     
@@ -132,18 +129,69 @@ class ResumeScorer:
         return 100.0, f"{years:.1f}y (meets {req}+ req)"
     
     def calculate_relevance_score(self, experience: List[Dict]) -> Tuple[float, str]:
-        """Calculate role relevance from job titles."""
+        """Calculate role relevance using LLM evaluation."""
         if not experience:
             return 0.0, "No work history"
         
-        keywords = {'software', 'developer', 'engineer', 'programmer', 'full-stack',
-                   'fullstack', 'backend', 'frontend', 'web', 'devops', 'architect'}
+        ensure_gemini_configured()
         
-        relevant = sum(1 for exp in experience 
-                      if any(kw in exp.get('job_title', '').lower() for kw in keywords))
-        total = len(experience)
-        
-        return (relevant / total) * 100 if total else 0, f"{relevant}/{total} relevant"
+        try:
+            model = genai.GenerativeModel(
+                "gemini-2.5-flash",
+                generation_config=genai.GenerationConfig(
+                    temperature=0,
+                    response_mime_type="application/json",
+                )
+            )
+            
+            job_titles = [exp.get('job_title', 'Unknown') for exp in experience]
+            
+            prompt = f"""You are a job relevance evaluator.
+
+TARGET JOB: {self.jd.get('title', 'Unknown')}
+JOB DESCRIPTION: {self.jd.get('description', 'Not provided')}
+
+CANDIDATE'S PAST JOB TITLES:
+{json.dumps(job_titles)}
+
+Evaluate how relevant the candidate's work history is to the target job.
+
+Scoring guidelines:
+- 100: All roles directly relevant (e.g., all "Software Engineer" for Software Engineer role)
+- 80: Most roles relevant (e.g., 4/5 relevant)
+- 60: Some relevant experience (e.g., 2/5 relevant)
+- 40: Minimal relevant experience (e.g., 1/5 relevant)
+- 0: No relevant experience
+
+Return JSON in this EXACT format:
+{{
+  "score": 80,
+  "reasoning": "brief explanation"
+}}
+
+IMPORTANT: Score must be 0, 40, 60, 80, or 100"""
+
+            response = model.generate_content(prompt)
+            result = json.loads(response.text)
+            
+            score = result.get('score', 0)
+            reasoning = result.get('reasoning', 'LLM evaluation')
+            
+            # Validate score
+            if score not in [0, 40, 60, 80, 100]:
+                score = 0
+            
+            return float(score), reasoning
+            
+        except Exception as e:
+            print(f"Error in LLM relevance scoring: {e}")
+            # Fallback to keyword matching
+            keywords = {'software', 'developer', 'engineer', 'programmer', 'full-stack',
+                       'fullstack', 'backend', 'frontend', 'web', 'devops', 'architect'}
+            relevant = sum(1 for exp in experience 
+                          if any(kw in exp.get('job_title', '').lower() for kw in keywords))
+            total = len(experience)
+            return (relevant / total) * 100 if total else 0, f"{relevant}/{total} relevant (fallback)"
     
     def calculate_education_score(self, education: List[Dict]) -> Tuple[float, str]:
         """Calculate education score using LLM-based relevance evaluation."""
@@ -258,19 +306,3 @@ IMPORTANT:
             }
         }
 
-
-if __name__ == "__main__":
-    from job_constants import JOB_DESCRIPTION
-    
-    scorer = ResumeScorer(JOB_DESCRIPTION)
-    
-    sample = {
-        "name": "Test Candidate",
-        "skills": ["Flask", "Django", "TypeScript", "EC2", "GitHub", "PostgreSQL"],
-        "total_years_experience": 4,
-        "experience": [{"job_title": "Software Engineer"}],
-        "education": [{"degree": "BS Computer Science"}]
-    }
-    
-    result = scorer.score(sample)
-    print(json.dumps(result, indent=2))

@@ -18,7 +18,7 @@ def extract_text_from_pdf_with_gemini(file_path: str) -> Optional[str]:
     """Fallback OCR using Gemini 2.5 Flash for image-based PDFs."""
     try:
         # print(f"  → Using Gemini 2.5 Flash for OCR...")
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         uploaded_file = genai.upload_file(file_path)
         
         prompt = "Extract ALL text content from this resume document. Return ONLY the raw text."

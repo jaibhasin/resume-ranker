@@ -46,7 +46,7 @@ def extract_structured_data(resume_text: str) -> Optional[dict]:
     """Extract structured data from resume text using Gemini."""
     try:
         model = genai.GenerativeModel(
-            "gemini-2.5-flash",
+            "gemini-1.5-flash",
             generation_config=genai.GenerationConfig(
                 temperature=0,  # Deterministic
                 response_mime_type="application/json",

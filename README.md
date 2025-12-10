@@ -41,3 +41,58 @@ python3 main.py --folder ./resumes/
 ```bash
 python3 main.py --files resume1.pdf resume2.docx resume3.pdf
 ```
+
+## Explanation of the scoring logic
+For scoring we are using 4 components with weights:
+1. Skills (45%) : instead of using hard-coded matching , we are using SOTA way of matching skills using LLM (e.g. js, javascript, nodejs also are related by couldnt be understood by embeddings, and hardcoding would have it's own limitations)
+2. Experience (30%) : here we are jusitng simply checking if the candidate has the required experience
+3. Relevance (15%) : using gemini to measaure how relevent are the past jobs to the current role
+4. Education (10%) : here also we are using LLM to check if the education is relevent to the role or not
+
+(currently we are using 3 api calls for scoring in all, we should reduced later. Either by using a smaller llm or by combining api calls to one)
+
+We have made the scoring Deterministic, so the resume gets same score everytime.
+
+I have given accuracy a higher priority over speed while designing the system
+
+
+## Libraries used and reasons for choosing them
+pdfplumber : used for extracting text from pdfs (handles all formats along with tables,multi-column text)
+
+python-docx	: used for extracting text from docx files (this is industry standard)
+
+pydantic : this is used to force the LLM to give the output in the exact json format which is required later for scoring
+
+google-generativeai : used to access gemini-api (can be later changed with claude/openai)
+
+## Any assumptions made
+
+1) We are assuming resumes are in pdf or docx format and in english (pdf can contain both text and images)
+2) Total Experience is calculated by adding all the years of experience in past jobs
+3) API available 
+
+
+## All AI tools used and how
+This is the final determistic resume scoring system I built. 
+I used resumes from reddit for testing
+IDE I used was google's Antigravity
+I am using gemini-2.5-flash api for processing
+
+Process : 
+1. get resumes from user using CLI
+2. extract all the text from resume (pdf we use pdfplumber , but if is in image form we use gemini ocr for that. and for docx we use python-docx)
+3. We have unstructred data now, which we need to get in structured format. We use gemini for that(temp=0), and getting data in json format using pydantic schema
+4.
+
+
+
+
+
+I tried to understand the best approach for implementing this, for which I took help of chatgpt, claude and gemini, to understand all kinds of approaches. 
+
+I designed the full software architecture, and implemented each file step by step. (used Antigravity side by side)
+I implmented in the following order : main.py , parser.py , extract.py , scorer.py
+
+The prompts where written by AI , for each call made to gemini (under my supervision)
+
+Used Antigravity for testing and debugging as well.

@@ -1,5 +1,4 @@
 google-generativeai
 pdfplumber
-python-docx
+python-docx                    
 python-dotenv
-pydantic

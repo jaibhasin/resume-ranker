@@ -1,13 +1,13 @@
 [
   {
-    "file_path": "resumes/resume1.pdf",
-    "file_name": "resume1.pdf",
-    "candidate_name": "Candidate Name",
-    "total_score": 63.0,
-    "explanation": "Skills: 6/9 matched. 10.6y (meets 3+ req). No work history.",
+    "file_path": "resumes/resume2.pdf",
+    "file_name": "resume2.pdf",
+    "candidate_name": "Jane Dow",
+    "total_score": 86.0,
+    "explanation": "Skills: 8/9 matched. 7.7y (meets 3+ req). The candidate has held 'Senior Software Engineer', 'Software Engineer', and 'Software Intern' roles, which are directly relevant to the target job of 'Software Engineer'. The 'Business Analyst' role is less relevant but the majority of the experience aligns well..",
     "breakdown": {
       "skills": {
-        "score": 66.67,
+        "score": 88.89,
         "weight": 40
       },
       "experience": {
@@ -15,31 +15,31 @@
         "weight": 30
       },
       "relevance": {
-        "score": 0.0,
+        "score": 80.0,
         "weight": 20
       },
       "education": {
-        "score": 30.0,
+        "score": 40.0,
         "weight": 10
       }
     },
     "details": {
       "matched_skills": [
+        "python",
         "javascript",
         "react",
         "nodejs",
-        "sql",
         "docker",
-        "git"
-      ],
-      "missing_skills": [
-        "python",
-        "aws",
+        "git",
+        "sql",
         "rest apis"
       ],
-      "skill_reasoning": "Candidate skills include Node.js (nodejs), JavaScript (javascript), React.js (react), SQL (sql), Docker (docker), and GitHub (git). TypeScript is related to JavaScript. GraphQL is related to REST APIs but not a direct match. No direct matches for python or aws.",
-      "experience_years": 10.583333333333334,
-      "education_note": "No education listed"
+      "missing_skills": [
+        "aws"
+      ],
+      "skill_reasoning": "The candidate possesses skills directly matching 'python', 'javascript', 'react', 'nodejs', 'docker', 'git', 'sql', and 'rest apis'. 'React Native' and 'TypeScript' also satisfy 'javascript', and 'Django' satisfies 'python'. 'MySQL' and 'PostgreSQL' satisfy 'sql'. 'REST' satisfies 'rest apis'.",
+      "experience_years": 7.65,
+      "education_note": "The candidate has a Bachelor of Arts in Economics. While economics involves analytical thinking, it is not a technical field directly related to software engineering. Therefore, the education is not directly relevant to the core requirements of designing, developing, and testing software."
     }
   }
 ]

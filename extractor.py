@@ -46,7 +46,7 @@ def extract_structured_data(resume_text: str) -> Optional[dict]:
     """Extract structured data from resume text using Gemini."""
     try:
         model = genai.GenerativeModel(
-            "gemini-2.5-flash-lite",
+            "gemini-2.5-flash",  # Using full flash model for better accuracy
             generation_config=genai.GenerationConfig(
                 temperature=0,  # Deterministic
                 response_mime_type="application/json",
@@ -54,21 +54,40 @@ def extract_structured_data(resume_text: str) -> Optional[dict]:
             )
         )
         
-        prompt = f"""Analyze this resume and extract structured information.
-        
+        prompt = f"""You are a resume parser. Extract ALL information from this resume into structured JSON format.
+
 RESUME TEXT:
 {resume_text}
 
-Extract all relevant information accurately. For missing fields, use empty strings or empty lists.
-Calculate total_years_experience by summing up all job durations."""
+CRITICAL INSTRUCTIONS:
+1. Extract the candidate's name, email, phone, and location
+2. Extract the professional summary/objective
+3. Extract ALL skills mentioned in the resume (technical skills, programming languages, frameworks, tools, etc.)
+   - Look in the SKILLS section
+   - Also look in job descriptions for technologies used
+   - Include ALL technologies, languages, frameworks, databases, tools mentioned
+4. Extract ALL work experience with job titles, companies, durations, years, and responsibilities
+5. Extract ALL education entries with degree, institution, and year
+6. Extract any certifications or courses
+7. Calculate total_years_experience by summing all job durations
+
+IMPORTANT: 
+- Do NOT leave skills, experience, or education arrays empty if the information exists in the resume
+- Extract EVERY skill mentioned, even if it seems minor
+- Be thorough and complete
+
+Return the complete JSON object with ALL fields populated."""
 
         response = model.generate_content(prompt)
         
         if response.text:
-            return json.loads(response.text)
+            result = json.loads(response.text)
+            return result
         return None
         
     except Exception as e:
         print(f"Error extracting structured data: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 

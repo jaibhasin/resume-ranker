@@ -74,25 +74,21 @@ google-generativeai : used to access gemini-api (can be later changed with claud
 
 ## All AI tools used and how
 This is the final determistic resume scoring system I built. 
-I used resumes from reddit for testing
-IDE I used was google's Antigravity
-I am using gemini-2.5-flash api for processing
+I used resumes from reddit for testing.
+IDE used was Google's Antigravity
+I am using gemini-2.5-flash api for processing (could have use gemini-3.0)
 
 Process : 
 1. get resumes from user using CLI
-2. extract all the text from resume (pdf we use pdfplumber , but if is in image form we use gemini ocr for that. and for docx we use python-docx)
-3. We have unstructred data now, which we need to get in structured format. We use gemini for that(temp=0), and getting data in json format using pydantic schema
-4.
-
-
-
-
+2. extract all the text from resume 
+3. We have unstructred data now, which we need to get in structured format. We use gemini(temp=0) to get data in json format using pydantic schema
+4. Then apply the scoring logic to get score for each resume
 
 I tried to understand the best approach for implementing this, for which I took help of chatgpt, claude and gemini, to understand all kinds of approaches. 
 
 I designed the full software architecture, and implemented each file step by step. (used Antigravity side by side)
 I implmented in the following order : main.py , parser.py , extract.py , scorer.py
 
-The prompts where written by AI , for each call made to gemini (under my supervision)
+For each call made to gemini, its prompt was written by Antigravity (under my supervision)
 
-Used Antigravity for testing and debugging as well.
+Used Antigravity for testing and debugging

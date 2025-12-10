@@ -1,2 +1,22 @@
 # Environment variables
 .env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Generated outputs
+ranking_results.json
+
+# Resume files (sensitive data)
+resumes/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

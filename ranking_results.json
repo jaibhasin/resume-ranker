@@ -1,13 +1,13 @@
 [
   {
-    "file_path": "resumes/resume1.pdf",
-    "file_name": "resume1.pdf",
-    "candidate_name": "Candidate Name",
-    "total_score": 76.0,
-    "explanation": "Skills: 6/9 matched. 13.8y (meets 3+ req). 4/6 relevant.",
+    "file_path": "resumes/resume5.docx",
+    "file_name": "resume5.docx",
+    "candidate_name": "Dennis Schr\u00f6der",
+    "total_score": 87.11,
+    "explanation": "Skills: 7/9 matched. 16.0y (meets 3+ req). 7/7 relevant.",
     "breakdown": {
       "skills": {
-        "score": 66.67,
+        "score": 77.78,
         "weight": 40
       },
       "experience": {
@@ -15,7 +15,7 @@
         "weight": 30
       },
       "relevance": {
-        "score": 66.67,
+        "score": 100.0,
         "weight": 20
       },
       "education": {
@@ -25,20 +25,20 @@
     },
     "details": {
       "matched_skills": [
+        "python",
         "javascript",
         "react",
-        "nodejs",
+        "aws",
         "docker",
         "git",
         "sql"
       ],
       "missing_skills": [
-        "python",
-        "aws",
+        "nodejs",
         "rest apis"
       ],
-      "skill_reasoning": "Candidate has 'JavaScript' and 'TypeScript' for 'javascript', 'React.js' for 'react', 'Node.js' for 'nodejs', 'Docker' for 'docker', 'GitHub Actions' for 'git', and 'SQL' for 'sql'.",
-      "experience_years": 13.8,
+      "skill_reasoning": "Candidate explicitly lists Python, React, AWS, Docker, and Git. JavaScript is satisfied by 'JavaScript' and 'TypeScript'. SQL is satisfied by 'SQL', 'PostgreSQL', and 'MySQL'.",
+      "experience_years": 16,
       "education_note": "Technical degree"
     }
   }

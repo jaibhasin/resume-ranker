@@ -146,20 +146,76 @@ class ResumeScorer:
         return (relevant / total) * 100 if total else 0, f"{relevant}/{total} relevant"
     
     def calculate_education_score(self, education: List[Dict]) -> Tuple[float, str]:
-        """Calculate education score."""
+        """Calculate education score using LLM-based relevance evaluation."""
         if not education:
             return 30.0, "No education listed"
         
-        for edu in education:
-            degree = edu.get('degree', '').lower()
-            if any(t in degree for t in ['computer science', 'software engineering']):
-                return 100.0, "CS/SE degree"
-            if any(t in degree for t in ['information technology', 'data science', 'electrical']):
-                return 80.0, "Related degree"
-            if any(t in degree for t in ['engineering', 'science']):
-                return 60.0, "Technical degree"
+        ensure_gemini_configured()
         
-        return 40.0, "Other degree"
+        try:
+            model = genai.GenerativeModel(
+                "gemini-2.5-flash",
+                generation_config=genai.GenerationConfig(
+                    temperature=0,
+                    response_mime_type="application/json",
+                )
+            )
+            
+            # Format education for prompt
+            education_list = [
+                f"{edu.get('degree', 'Unknown')} from {edu.get('institution', 'Unknown')}"
+                for edu in education
+            ]
+            
+            prompt = f"""You are an education relevance evaluator for job applications.
+
+JOB ROLE: {self.jd.get('title', 'Unknown')}
+JOB DESCRIPTION: {self.jd.get('description', 'Not provided')}
+
+CANDIDATE'S EDUCATION:
+{json.dumps(education_list)}
+
+Evaluate how relevant the candidate's education is to this specific job role.
+
+Scoring guidelines:
+- 100: Perfect match (e.g., CS degree for Software Engineer, MBA for Business Analyst)
+- 80: Closely related field (e.g., IT/Data Science for Software Engineer)
+- 60: Somewhat relevant technical/analytical background
+- 40: Has a degree but not directly relevant
+- 30: No education listed
+
+Return JSON in this EXACT format:
+{{
+  "score": 100,
+  "reasoning": "brief explanation of why this score"
+}}
+
+IMPORTANT: 
+- Score must be one of: 100, 80, 60, 40, or 30
+- Be consistent: same education + same job = same score every time"""
+
+            response = model.generate_content(prompt)
+            result = json.loads(response.text)
+            
+            score = result.get('score', 40)
+            reasoning = result.get('reasoning', 'LLM evaluation')
+            
+            # Validate score is one of allowed values
+            if score not in [100, 80, 60, 40, 30]:
+                score = 40  # Default fallback
+            
+            return float(score), reasoning
+            
+        except Exception as e:
+            print(f"Error in LLM education scoring: {e}")
+            # Fallback to simple check
+            for edu in education:
+                degree = edu.get('degree', '').lower()
+                if any(t in degree for t in ['computer science', 'software engineering']):
+                    return 100.0, "CS/SE degree (fallback)"
+                if any(t in degree for t in ['information technology', 'data science']):
+                    return 80.0, "Related degree (fallback)"
+            return 40.0, "Other degree (fallback)"
     
     def score(self, resume_data: Dict[str, Any]) -> Dict[str, Any]:
         """Calculate total weighted score."""

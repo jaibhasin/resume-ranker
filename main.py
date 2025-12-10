@@ -15,7 +15,7 @@ from job_constants import JOB_DESCRIPTION
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description="Resume Ranking System - Score and rank resumes against a job description"
+        description="Resume Ranking System"
     )
     parser.add_argument("--files", nargs="*", help="Explicit resume file paths")
     parser.add_argument("--folder", help="Folder containing resume files")
@@ -44,7 +44,7 @@ def collect_resume_files(args):
             return []
 
         resume_files = []
-        for fname in sorted(os.listdir(args.folder)):  # Sort for deterministic order
+        for fname in sorted(os.listdir(args.folder)):
             if fname.lower().endswith(valid_ext):
                 full_path = os.path.join(args.folder, fname)
                 if os.path.isfile(full_path):
@@ -59,30 +59,28 @@ def collect_resume_files(args):
 
 def process_resume(file_path: str, scorer: ResumeScorer) -> dict:
     """Process a single resume through the full pipeline."""
-    print(f"\n{'='*60}")
-    print(f"Processing: {os.path.basename(file_path)}")
-    print('='*60)
+    print(f"Processing: {os.path.basename(file_path)}:\n")
     
     # Step 1: Parse (extract text)
-    print("→ Extracting text...")
+    print("Extracting text...")
     text = parse_resume(file_path)
     if not text:
-        print("✗ Failed to extract text")
+        print("Failed to extract text!!")
         return None
-    print(f"✓ Extracted {len(text)} characters")
+    print(f"Extracted {len(text)} characters")
     
     # Step 2: Extract structured data
-    print("→ Extracting structured data...")
+    print("Converting data to structured format")
     structured = extract_structured_data(text)
     if not structured:
-        print("✗ Failed to extract structured data")
+        print("Failed to extract structured data!!")
         return None
-    print(f"✓ Extracted data for: {structured.get('name', 'Unknown')}")
+    print(f"Extracted data for: {structured.get('name', 'Unknown')}")
     
     # Step 3: Score
-    print("→ Calculating score...")
+    print("Calculating score...")
     score_result = scorer.score(structured)
-    print(f"✓ Score: {score_result['total_score']}")
+    print(f"Score: {score_result['total_score']}")
     
     return {
         "file_path": file_path,
@@ -93,9 +91,7 @@ def process_resume(file_path: str, scorer: ResumeScorer) -> dict:
 
 def display_rankings(results: list):
     """Display final ranked results."""
-    print("\n" + "="*80)
-    print("FINAL RANKINGS")
-    print("="*80)
+    print("FINAL RANKINGS: \n\n")
     
     for rank, result in enumerate(results, 1):
         print(f"\n{rank}. {result['file_name']} – Score: {result['total_score']}")
@@ -119,9 +115,7 @@ def display_rankings(results: list):
 
 def main():
     """Main execution flow."""
-    print("="*80)
     print("RESUME RANKING SYSTEM")
-    print("="*80)
     
     # Get files
     args = get_args()
